@@ -31,4 +31,13 @@ export class ProductService {
     // 3. return message success
     return { message: "create product success" };
   };
+  
+  getCouponById = async (id: number) => {
+    const coupon = await this.prisma.coupon.findFirst({
+      where: {
+        "id": id,
+      },
+    })
+    return coupon;
+  }
 }

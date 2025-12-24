@@ -2,6 +2,7 @@ import { ApiError } from "../../utils/api-error";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCouponDto } from "./dto/create-coupon.dto";
 import { ApplyCouponDto } from "./dto/apply-coupon.dto";
+import { PayloadDTO } from "../auth/dto/payload.dto";
 
 export class CouponService {
   prisma: PrismaService;
@@ -28,73 +29,73 @@ export class CouponService {
   };
 
   // CREATE coupon (system / referral reward)
-  createCoupon = async (body: CreateCouponDto) => {
+  createCoupon = async (body: CreateCouponDto, user: PayloadDTO) => {
     await this.prisma.coupon.create({
       data: {
-        userId: body.userId,
-        code: body.code,
+        userId: user.id,
+        code: Math.random().toString(36).substring(2, 8).toUpperCase(),
         discount: body.discount,
-        expiresAt: body.expiresAt,
+        expiresAt: new Date(body.expiresAt),
       },
     });
 
     return { message: "Create coupon success" };
   };
 
-  // APPLY coupon (during checkout)
-  applyCoupon = async (body: ApplyCouponDto) => {
-    const coupon = await this.prisma.coupon.findUnique({
-      where: { code: body.code },
-    });
+  // // APPLY coupon (during checkout)
+  // applyCoupon = async (body: ApplyCouponDto) => {
+  //   const coupon = await this.prisma.coupon.findUnique({
+  //     where: { code: body.code },
+  //   });
 
-    if (!coupon) {
-      throw new ApiError("Invalid coupon", 400);
-    }
+  //   if (!coupon) {
+  //     throw new ApiError("Invalid coupon", 400);
+  //   }
 
-    if (coupon.used) {
-      throw new ApiError("Coupon already used", 400);
-    }
+  //   if (coupon.used) {
+  //     throw new ApiError("Coupon already used", 400);
+  //   }
 
-    if (coupon.expiresAt < new Date()) {
-      throw new ApiError("Coupon expired", 400);
-    }
+  //   if (coupon.expiresAt < new Date()) {
+  //     throw new ApiError("Coupon expired", 400);
+  //   }
 
-    return coupon;
-  };
+  //   return coupon;
+  // };
 
-  // MARK coupon as used (after payment)
-  markCouponUsed = async (id: number) => {
-    const coupon = await this.prisma.coupon.findFirst({
-      where: { id },
-    });
+  // // MARK coupon as used (after payment)
+  // markCouponUsed = async (id: number) => {
+  //   const coupon = await this.prisma.coupon.findFirst({
+  //     where: { id },
+  //   });
 
-    if (!coupon) throw new ApiError("Coupon not found", 404);
+  //   if (!coupon) throw new ApiError("Coupon not found", 404);
 
-    if (coupon.used) {
-      throw new ApiError("Coupon already used", 400);
-    }
+  //   if (coupon.used) {
+  //     throw new ApiError("Coupon already used", 400);
+  //   }
 
-    await this.prisma.coupon.update({
-      where: { id },
-      data: { used: true },
-    });
+  //   await this.prisma.coupon.update({
+  //     where: { id },
+  //     data: { used: true },
+  //   });
 
-    return { message: "Coupon marked as used" };
-  };
+  //   return { message: "Coupon marked as used" };
+  // };
 
-  // RESTORE coupon (rollback on rejected transaction)
-  restoreCoupon = async (id: number) => {
-    const coupon = await this.prisma.coupon.findFirst({
-      where: { id },
-    });
+  // // RESTORE coupon (rollback on rejected transaction)
+  // restoreCoupon = async (id: number) => {
+  //   const coupon = await this.prisma.coupon.findFirst({
+  //     where: { id },
+  //   });
 
-    if (!coupon) throw new ApiError("Coupon not found", 404);
+  //   if (!coupon) throw new ApiError("Coupon not found", 404);
 
-    await this.prisma.coupon.update({
-      where: { id },
-      data: { used: false },
-    });
+  //   await this.prisma.coupon.update({
+  //     where: { id },
+  //     data: { used: false },
+  //   });
 
-    return { message: "Coupon restored successfully" };
-  };
+  //   return { message: "Coupon restored successfully" };
+  // };
 }

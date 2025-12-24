@@ -1,4 +1,4 @@
-import { sign } from "jsonwebtoken";
+import  { sign }  from "jsonwebtoken";
 import { addMonths } from "date-fns";
 import { BASE_URL_FE } from "../../config/env";
 import { ApiError } from "../../utils/api-error";
@@ -37,7 +37,7 @@ export class AuthService {
         data: {
           name: body.name,
           email: body.email,
-          passwordHash: hashedPassword,
+          password: hashedPassword,
           role: body.role ?? Role.CUSTOMER,
           referralCode,
         },
@@ -63,7 +63,8 @@ export class AuthService {
           await tx.coupon.create({
             data: {
               userId: user.id,
-              discountValue: 10000,
+              code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+              discount: 10,
               expiresAt: addMonths(new Date(), 3),
             },
           });
@@ -79,12 +80,11 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: body.email },
     });
-
     if (!user) throw new ApiError("Invalid credentials", 400);
 
     const isPasswordMatch = await comparePassword(
       body.password,
-      user.passwordHash
+      user.password
     );
 
     if (!isPasswordMatch) throw new ApiError("Invalid credentials", 400);
@@ -98,7 +98,7 @@ export class AuthService {
       expiresIn: "2h",
     });
 
-    const { passwordHash, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -133,12 +133,12 @@ export class AuthService {
   };
 
   // ================= RESET PASSWORD =================
-  resetPassword = async (body: ResetPasswordDTO, authUserId: string) => {
+  resetPassword = async (body: ResetPasswordDTO, authUserId: number) => {
     const hashedPassword = await hashPassword(body.password);
 
     await this.prisma.user.update({
       where: { id: authUserId },
-      data: { passwordHash: hashedPassword },
+      data: { password: hashedPassword },
     });
 
     return { message: "Reset password success" };

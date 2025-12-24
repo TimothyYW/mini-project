@@ -38,7 +38,7 @@ export class AuthController {
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       // user id injected by auth middleware
-      const authUserId = res.locals.user.id as string;
+      const authUserId = res.locals.user.id;
 
       const result = await this.authService.resetPassword(
         req.body,

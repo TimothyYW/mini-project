@@ -48,10 +48,11 @@ model Point {
 }
 
 model Coupon {
-  id            String   @id @default(uuid())
+  id            Int       @id @default(autoincrement())
   userId        Int
-  discountValue Int
-  isUsed        Boolean  @default(false)
+  code          String   @unique
+  discount      Int
+  used        Boolean  @default(false)
   expiresAt     DateTime
   createdAt     DateTime @default(now())
 

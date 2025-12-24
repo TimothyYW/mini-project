@@ -25,13 +25,12 @@ export class AuthRouter {
       validateBody(RegisterDTO),
       this.authController.register
     );
-
+    
     this.router.post(
       "/login",
       validateBody(LoginDTO),
       this.authController.login
     );
-
     this.router.post(
       "/forgot-password",
       validateBody(ForgotPasswordDTO),

@@ -64,7 +64,7 @@ export class AuthService {
             data: {
               userId: user.id,
               code: Math.random().toString(36).substring(2, 8).toUpperCase(),
-              discount: 10,
+              discountValue: 10,
               expiresAt: addMonths(new Date(), 3),
             },
           });

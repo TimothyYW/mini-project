@@ -1,28 +1,25 @@
-import {
-  IsDateString,
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  Min,
-} from "class-validator";
+import { IsNotEmpty, IsString, IsNumber, IsPositive } from "class-validator";
 
-export class CreateEventDto {
+export class createEventDto {
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
-  @IsInt()
-  @Min(0)
-  price: number;
+  @IsNumber()
+  @IsPositive()
+  @IsNotEmpty()
+  price!: number;
 
-  @IsInt()
-  @Min(1)
-  totalSeats: number;
+  @IsNumber()
+  @IsPositive()
+  @IsNotEmpty()
+  totalSeats!: number;
 
-  @IsDateString()
-  eventDate: string;
+  @IsString()
+  @IsNotEmpty()
+  eventDate!: Date;
 }

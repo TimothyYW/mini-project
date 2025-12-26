@@ -27,10 +27,9 @@ model User {
   createdAt      DateTime  @default(now())
 
   points        Point[]
-  coupons       Coupon[]
   events        Event[]  @relation("OrganizerEvents")
   transactions  Transaction[]
-  vouchers      Voucher[]
+  coupons       Coupon[]
 
   @@map("users")
 }
@@ -47,36 +46,36 @@ model Point {
   @@map("points")
 }
 
-model Coupon {
+model Voucher {
   id            Int       @id @default(autoincrement())
-  userId        Int
+  eventId       Int
   code          String   @unique
   discount      Int
   used        Boolean  @default(false)
   expiresAt     DateTime
   createdAt     DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
 
-  @@map("coupons")
+  @@map("vouchers")
 }
 
 model Event {
-  id             String   @id @default(uuid())
+  id             Int   @id @default(autoincrement())
   organizerId    Int
   title          String
   description    String
   price          Int
   totalSeats     Int
   availableSeats Int
-  eventDate      DateTime
+  date      DateTime
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   organizer   User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
   transactions Transaction[]
-  vouchers     Voucher[]
-  
+  coupons      Voucher[]
+
   @@map("events")
 }
 
@@ -89,7 +88,7 @@ enum TransactionStatus {
 model Transaction {
   id            String            @id @default(uuid())
   userId        Int
-  eventId       String
+  eventId       Int
   quantity      Int
   totalPrice    Int
   status        TransactionStatus @default(PENDING)
@@ -103,19 +102,18 @@ model Transaction {
   @@map("transactions")
 }
 
-model Voucher {
+model Coupon {
   id             String   @id @default(uuid())
-  organizerId    Int
-  eventId        String
+  userId         Int
+  code           String   @unique
   discountValue  Int
   isUsed         Boolean  @default(false)
   expiresAt      DateTime
   createdAt      DateTime @default(now())
 
-  organizer User  @relation(fields: [organizerId], references: [id])
-  event     Event @relation(fields: [eventId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-  @@map("vouchers")
+  @@map("coupons")
 }
 
 

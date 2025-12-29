@@ -4,6 +4,8 @@ import { validateBody } from "../../middlewares/validation.middleware";
 import { createEventDto } from "./dto/create-event.dto";
 import { JwtMiddleware } from "../../middlewares/jwt.middleware";
 import { JWT_SECRET } from "../../config/env";
+import { validateIsOrganizer } from "../../middlewares/permission.middleware";
+import { validateEvent } from "../../middlewares/event.middleware";
 import { validateOrganizer } from "../../middlewares/permission.middleware";
 
 export class EventRouter {
@@ -24,10 +26,36 @@ export class EventRouter {
       "/",
       validateBody(createEventDto),
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
-      validateOrganizer(),
+      validateIsOrganizer(),
       this.EventController.createEvent
     );
+    this.router.get(
+      "/:id",
+      this.EventController.getEventById
+    );
+    this.router.get(
+      "/",
+      this.EventController.getAllEvents
+    );
 
+    this.router.put(
+      "/:id",
+      validateBody(createEventDto),
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      validateEvent(),
+      validateIsOrganizer(),
+      validateOrganizer(),
+      this.EventController.updateEvent
+    );
+
+    this.router.delete(
+      "/:id",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      validateEvent(),
+      validateIsOrganizer(),
+      validateOrganizer(),
+      this.EventController.deleteEvent
+    );
   };
 
   getRouter = () => {

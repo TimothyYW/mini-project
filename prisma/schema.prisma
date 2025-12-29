@@ -67,7 +67,6 @@ model Event {
   description    String
   price          Int
   totalSeats     Int
-  availableSeats Int
   date      DateTime
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

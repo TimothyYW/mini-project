@@ -5,7 +5,7 @@ import { CreateCouponDto } from "./dto/create-coupon.dto";
 import { ApplyCouponDto } from "./dto/apply-coupon.dto";
 import { JwtMiddleware } from "../../middlewares/jwt.middleware";
 import { JWT_SECRET } from "../../config/env";
-import { validateOrganizer } from "../../middlewares/permission.middleware";
+import { validateIsOrganizer } from "../../middlewares/permission.middleware";
 
 export class CouponRouter {
   router: Router;
@@ -31,7 +31,7 @@ export class CouponRouter {
       "/",
       validateBody(CreateCouponDto),
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
-      validateOrganizer(),
+      validateIsOrganizer(),
       this.couponController.createCoupon
     );
 

@@ -18,7 +18,7 @@ export class CouponService {
   };
 
   // GET coupon by id
-  getCoupon = async (id: number) => {
+  getCoupon = async (id: string) => {
     const coupon = await this.prisma.coupon.findFirst({
       where: { id },
     });
@@ -34,7 +34,7 @@ export class CouponService {
       data: {
         userId: user.id,
         code: Math.random().toString(36).substring(2, 8).toUpperCase(),
-        discount: body.discount,
+        discountValue: body.discount,
         expiresAt: new Date(body.expiresAt),
       },
     });
@@ -42,60 +42,5 @@ export class CouponService {
     return { message: "Create coupon success" };
   };
 
-  // // APPLY coupon (during checkout)
-  // applyCoupon = async (body: ApplyCouponDto) => {
-  //   const coupon = await this.prisma.coupon.findUnique({
-  //     where: { code: body.code },
-  //   });
-
-  //   if (!coupon) {
-  //     throw new ApiError("Invalid coupon", 400);
-  //   }
-
-  //   if (coupon.used) {
-  //     throw new ApiError("Coupon already used", 400);
-  //   }
-
-  //   if (coupon.expiresAt < new Date()) {
-  //     throw new ApiError("Coupon expired", 400);
-  //   }
-
-  //   return coupon;
-  // };
-
-  // // MARK coupon as used (after payment)
-  // markCouponUsed = async (id: number) => {
-  //   const coupon = await this.prisma.coupon.findFirst({
-  //     where: { id },
-  //   });
-
-  //   if (!coupon) throw new ApiError("Coupon not found", 404);
-
-  //   if (coupon.used) {
-  //     throw new ApiError("Coupon already used", 400);
-  //   }
-
-  //   await this.prisma.coupon.update({
-  //     where: { id },
-  //     data: { used: true },
-  //   });
-
-  //   return { message: "Coupon marked as used" };
-  // };
-
-  // // RESTORE coupon (rollback on rejected transaction)
-  // restoreCoupon = async (id: number) => {
-  //   const coupon = await this.prisma.coupon.findFirst({
-  //     where: { id },
-  //   });
-
-  //   if (!coupon) throw new ApiError("Coupon not found", 404);
-
-  //   await this.prisma.coupon.update({
-  //     where: { id },
-  //     data: { used: false },
-  //   });
-
-  //   return { message: "Coupon restored successfully" };
-  // };
+  
 }

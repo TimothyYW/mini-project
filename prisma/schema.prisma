@@ -8,23 +8,38 @@ datasource db {
   directUrl= env("DIRECT_URL")
 }
 
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
 enum Role {
   CUSTOMER
   ORGANIZER
 }
 
+enum TransactionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+//////////////////////////////////////////////////////
+// USER
+//////////////////////////////////////////////////////
+
 model User {
-  id             Int       @id @default(autoincrement())
-  name           String
-  email          String    @unique
-  password       String
-  role           Role
-  referralCode   String    @unique
-  referredById   Int?
-  referredBy     User?     @relation("Referral", fields: [referredById], references: [id])
-  referrals      User[]    @relation("Referral")
-  profileImage   String?
-  createdAt      DateTime  @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  role         Role
+  referralCode String   @unique
+  referredById Int?
+  profileImage String?
+  createdAt    DateTime @default(now())
+
+  referredBy User?  @relation("Referral", fields: [referredById], references: [id])
+  referrals  User[] @relation("Referral")
 
   points        Point[]
   events        Event[]  @relation("OrganizerEvents")
@@ -33,6 +48,10 @@ model User {
 
   @@map("users")
 }
+
+//////////////////////////////////////////////////////
+// POINTS (WITH EXPIRATION)
+//////////////////////////////////////////////////////
 
 model Point {
   id         String   @id @default(uuid())
@@ -45,6 +64,10 @@ model Point {
   
   @@map("points")
 }
+
+//////////////////////////////////////////////////////
+// COUPON (SYSTEM REWARD)
+//////////////////////////////////////////////////////
 
 model Voucher {
   id            Int       @id @default(autoincrement())
@@ -59,6 +82,10 @@ model Voucher {
 
   @@map("vouchers")
 }
+
+//////////////////////////////////////////////////////
+// EVENT
+//////////////////////////////////////////////////////
 
 model Event {
   id             Int   @id @default(autoincrement())
@@ -76,12 +103,6 @@ model Event {
   coupons      Voucher[]
 
   @@map("events")
-}
-
-enum TransactionStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
 }
 
 model Transaction {

@@ -5,7 +5,9 @@ import { PORT } from "./config/env";
 import { errorMiddleware } from "./middlewares/error.middleware";
 // import { SampleRouter } from "./modules/sample/sample.router";
 import { ProductRouter } from "./modules/product/product.router";
-import { UserRouter } from "./modules/user/user.router";
+import { AuthRouter } from "./modules/auth/auth.router";
+// import { CouponRouter } from "./modules/coupon/coupon.router";
+import { EventRouter } from "./modules/event/event.router";
 
 export class App {
   app: Express;
@@ -23,13 +25,15 @@ export class App {
   }
 
   private routes() {
-    // const sampleRouter = new SampleRouter();
-    // const productRouter = new ProductRouter();
-    const userRouter = new UserRouter();
+    const authRouter = new AuthRouter();
+    // const couponRouter = new CouponRouter();
+    const eventRouter = new EventRouter();
 
-    this.app.use("/users", userRouter.getRouter());
-    // this.app.use("/samples", sampleRouter.getRouter());
-    // this.app.use("/products", productRouter.getRouter());
+
+    this.app.use("/auth", authRouter.getRouter());
+    //this.app.use("/coupons", couponRouter.getRouter());
+
+    this.app.use("/events", eventRouter.getRouter());
   }
 
   private handleError() {

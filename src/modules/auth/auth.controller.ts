@@ -1,32 +1,53 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { AuthService } from "./auth.service";
-import { ApiError } from "../../utils/api-error";
 
 export class AuthController {
-  authService: AuthService;
+  private authService: AuthService;
 
   constructor() {
     this.authService = new AuthService();
   }
 
-  register = async (req: Request, res: Response) => {
-    const result = await this.authService.register(req.body);
-    return res.status(200).send(result);
+  register = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.authService.register(req.body);
+      return res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  login = async (req: Request, res: Response) => {
-    const result = await this.authService.login(req.body);
-    return res.status(200).send(result);
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.authService.login(req.body);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  forgotPassword = async (req: Request, res: Response) => {
-    const result = await this.authService.forgotPassword(req.body);
-    return res.status(200).send(result);
+  forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.authService.forgotPassword(req.body);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  resetPassword = async (req: Request, res: Response) => {
-    const authUserId = res.locals.user.id;
-    const result = await this.authService.resetPassword(req.body, authUserId);
-    return res.status(200).send(result);
+  resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // user id injected by auth middleware
+      const authUserId = res.locals.user.id;
+
+      const result = await this.authService.resetPassword(
+        req.body,
+        authUserId
+      );
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
   };
 }

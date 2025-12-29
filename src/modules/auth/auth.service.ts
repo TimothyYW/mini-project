@@ -1,37 +1,146 @@
-import { PrismaService } from "../prisma/prisma.service";
-import { RegisterDTO } from "./dto/register.dto";
+import  { sign }  from "jsonwebtoken";
+import { addMonths } from "date-fns";
+import { BASE_URL_FE } from "../../config/env";
 import { ApiError } from "../../utils/api-error";
-import { hashPassword } from "../../utils/password";
-import { randomString } from "../../utils/random-string";
+import { comparePassword, hashPassword } from "../../utils/password";
+import { MailService } from "../mail/mail.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { ForgotPasswordDTO } from "./dto/forgot-password.dto";
+import { LoginDTO } from "./dto/login.dto";
+import { RegisterDTO, Role } from "./dto/register.dto";
+import { ResetPasswordDTO } from "./dto/reset-password.dto";
 
 export class AuthService {
-  prisma: PrismaService;
+  private prisma: PrismaService;
+  private mailService: MailService;
 
   constructor() {
     this.prisma = new PrismaService();
+    this.mailService = new MailService();
   }
 
-  register = async (data: RegisterDTO) => {
-    const existingUser = await this.prisma.user.findFirst({
-      where: { email: data.email },
+  // ================= REGISTER =================
+  register = async (body: RegisterDTO) => {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: body.email },
     });
 
     if (existingUser) {
       throw new ApiError("Email already exists", 400);
     }
 
-    const hashedPassword = await hashPassword(data.password);
+    const hashedPassword = await hashPassword(body.password);
+    const referralCode = `REF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-    const newUser = await this.prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        passwordHash: hashedPassword,
-        role: "CUSTOMER",
-        referralCode: randomString(8),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name: body.name,
+          email: body.email,
+          password: hashedPassword,
+          role: body.role ?? Role.CUSTOMER,
+          referralCode,
+        },
+      });
+
+      // Referral logic
+      if (body.referralCode) {
+        const referrer = await tx.user.findUnique({
+          where: { referralCode: body.referralCode },
+        });
+
+        if (referrer) {
+          // Give points to referrer
+          await tx.point.create({
+            data: {
+              userId: referrer.id,
+              amount: 10000,
+              expiresAt: addMonths(new Date(), 3),
+            },
+          });
+
+          // Give coupon to new user
+          await tx.coupon.create({
+            data: {
+              userId: user.id,
+              code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+              discountValue: 10,
+              expiresAt: addMonths(new Date(), 3),
+            },
+          });
+        }
+      }
     });
 
-    return newUser;
+    return { message: "Register success" };
+  };
+
+  // ================= LOGIN =================
+  login = async (body: LoginDTO) => {
+    const user = await this.prisma.user.findUnique({
+      where: { email: body.email },
+    });
+    if (!user) throw new ApiError("Invalid credentials", 400);
+
+    const isPasswordMatch = await comparePassword(
+      body.password,
+      user.password
+    );
+
+    if (!isPasswordMatch) throw new ApiError("Invalid credentials", 400);
+
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const accessToken = sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: "2h",
+    });
+
+    const { password, ...userWithoutPassword } = user;
+
+    return {
+      user: userWithoutPassword,
+      accessToken,
+    };
+  };
+
+  // ================= FORGOT PASSWORD =================
+  forgotPassword = async (body: ForgotPasswordDTO) => {
+    const user = await this.prisma.user.findUnique({
+      where: { email: body.email },
+    });
+
+    if (!user) throw new ApiError("User not found", 404);
+
+    const token = sign(
+      { id: user.id },
+      process.env.JWT_SECRET_RESET!,
+      { expiresIn: "15m" }
+    );
+
+    await this.mailService.sendEmail(
+      body.email,
+      "Forgot Password",
+      "forgot-password",
+      {
+        resetUrl: `${BASE_URL_FE}/reset-password/${token}`,
+      }
+    );
+
+    return { message: "Reset password email sent" };
+  };
+
+  // ================= RESET PASSWORD =================
+  resetPassword = async (body: ResetPasswordDTO, authUserId: number) => {
+    const hashedPassword = await hashPassword(body.password);
+
+    await this.prisma.user.update({
+      where: { id: authUserId },
+      data: { password: hashedPassword },
+    });
+
+    return { message: "Reset password success" };
   };
 }

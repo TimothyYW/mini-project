@@ -41,10 +41,10 @@ model User {
   referredBy User?  @relation("Referral", fields: [referredById], references: [id])
   referrals  User[] @relation("Referral")
 
-  events       Event[]
-  points       Point[]
-  coupons      Coupon[]
-  transactions Transaction[]
+  points        Point[]
+  events        Event[]  @relation("OrganizerEvents")
+  transactions  Transaction[]
+  coupons       Coupon[]
 
   @@map("users")
 }
@@ -54,15 +54,14 @@ model User {
 //////////////////////////////////////////////////////
 
 model Point {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  amount    Int
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     Int
+  amount     Int
   expiresAt DateTime
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
-
-  @@index([userId])
+  
   @@map("points")
 }
 
@@ -70,19 +69,18 @@ model Point {
 // COUPON (SYSTEM REWARD)
 //////////////////////////////////////////////////////
 
-model Coupon {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  code      String   @unique
-  discount  Int
-  used      Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+model Voucher {
+  id            Int       @id @default(autoincrement())
+  eventId       Int
+  code          String   @unique
+  discount      Int
+  used        Boolean  @default(false)
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-  transactions Transaction[]
+  event Event @relation(fields: [eventId], references: [id])
 
-  @@map("coupons")
+  @@map("vouchers")
 }
 
 //////////////////////////////////////////////////////
@@ -90,65 +88,53 @@ model Coupon {
 //////////////////////////////////////////////////////
 
 model Event {
-  id             Int      @id @default(autoincrement())
+  id             Int   @id @default(autoincrement())
   organizerId    Int
   title          String
   description    String
-  date           DateTime
-  location       String
+  price          Int
   totalSeats     Int
-  availableSeats Int
+  date      DateTime
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  organizer    User          @relation(fields: [organizerId], references: [id])
-  vouchers     Voucher[]
+  organizer   User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
   transactions Transaction[]
+  coupons      Voucher[]
 
   @@map("events")
 }
 
-//////////////////////////////////////////////////////
-// VOUCHER (EVENT-SPECIFIC)
-//////////////////////////////////////////////////////
-
-model Voucher {
-  id        Int      @id @default(autoincrement())
-  eventId   Int
-  code      String   @unique
-  discount  Int
-  quota     Int
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  event Event @relation(fields: [eventId], references: [id])
-  transactions Transaction[]
-
-  @@map("vouchers")
-}
-
-//////////////////////////////////////////////////////
-// TRANSACTION (PAYMENT & ATTENDEE SOURCE)
-//////////////////////////////////////////////////////
-
 model Transaction {
-  id           Int               @id @default(autoincrement())
-  userId       Int
-  eventId      Int
-  quantity     Int
-  totalPrice   Int
-  status       TransactionStatus @default(PENDING)
-  paymentProof String?
-  couponId     Int?
-  voucherId    Int?
-  pointsUsed   Int?
-  createdAt    DateTime          @default(now())
+  id            String            @id @default(uuid())
+  userId        Int
+  eventId       Int
+  quantity      Int
+  totalPrice    Int
+  status        TransactionStatus @default(PENDING)
+  paymentProof  String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id])
-  event   Event   @relation(fields: [eventId], references: [id])
-  coupon  Coupon? @relation(fields: [couponId], references: [id])
-  voucher Voucher? @relation(fields: [voucherId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
 
-  @@index([userId])
-  @@index([eventId])
   @@map("transactions")
 }
+
+model Coupon {
+  id             String   @id @default(uuid())
+  userId         Int
+  code           String   @unique
+  discountValue  Int
+  isUsed         Boolean  @default(false)
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("coupons")
+}
+
+
+

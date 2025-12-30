@@ -3,11 +3,9 @@ import cors from "cors";
 import express, { Express } from "express";
 import { PORT } from "./config/env";
 import { errorMiddleware } from "./middlewares/error.middleware";
-// import { SampleRouter } from "./modules/sample/sample.router";
-import { ProductRouter } from "./modules/product/product.router";
 import { AuthRouter } from "./modules/auth/auth.router";
-// import { CouponRouter } from "./modules/coupon/coupon.router";
 import { EventRouter } from "./modules/event/event.router";
+import { VoucherRouter } from "./modules/voucher/voucher.router";
 
 export class App {
   app: Express;
@@ -26,15 +24,14 @@ export class App {
 
   private routes() {
     const authRouter = new AuthRouter();
-    // const couponRouter = new CouponRouter();
     const eventRouter = new EventRouter();
+    const voucherRouter = new VoucherRouter();
 
 
     this.app.use("/auth", authRouter.getRouter());
-    //this.app.use("/coupons", couponRouter.getRouter());
-
     this.app.use("/events", eventRouter.getRouter());
-  }
+    this.app.use("/events/:id/voucher", eventRouter.getRouter());
+    }
 
   private handleError() {
     this.app.use(errorMiddleware);

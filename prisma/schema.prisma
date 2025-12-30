@@ -74,7 +74,6 @@ model Voucher {
   eventId       Int
   code          String   @unique
   discount      Int
-  used        Boolean  @default(false)
   expiresAt     DateTime
   createdAt     DateTime @default(now())
 

@@ -17,7 +17,6 @@ export const validateIsOrganizer = () => {
 export const validateOrganizer = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const user = res.locals.user;
-
     if (user.role !== "ORGANIZER") {
       throw new ApiError("Access denied: Organizer only", 403);
     }

@@ -8,7 +8,6 @@ export const validateEvent = () => {
         if (isNaN(event)) {
             throw new ApiError("Invalid event ID", 400);
         }
-
         const eventService = new EventService();
         const eventExists = await eventService.getEventById(event);
         if (!eventExists) {

@@ -5,7 +5,7 @@ import { ApiError } from "../../utils/api-error";
 
 export const validateVoucher = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        const voucher = parseInt(req.params.id, 10);
+        const voucher = parseInt(req.params.voucherId, 10);
         if (isNaN(voucher)) {
             throw new ApiError("Invalid voucher ID", 400);
         }

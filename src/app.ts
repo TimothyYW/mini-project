@@ -30,7 +30,7 @@ export class App {
 
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/events", eventRouter.getRouter());
-    this.app.use("/events/:id/voucher", eventRouter.getRouter());
+    this.app.use("/events/:id/voucher", voucherRouter.getRouter());
     }
 
   private handleError() {

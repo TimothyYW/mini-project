@@ -16,7 +16,7 @@ export class VoucherRouter {
   jwtMiddleware: JwtMiddleware;
 
   constructor() {
-    this.router = Router();
+    this.router = Router({ mergeParams: true });
     this.VoucherController = new VoucherController();
     this.jwtMiddleware = new JwtMiddleware();
     this.initRoutes();
@@ -25,20 +25,18 @@ export class VoucherRouter {
   private initRoutes = () => {
     this.router.use(validateEvent());
 
-
     this.router.post(
       "/",
       validateBody(CreateVoucherDto),
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
       validateIsOrganizer(),
+      validateOrganizer(),
       this.VoucherController.createVoucher
     );
-    this.router.get(
-      "/:voucherId",
-      this.VoucherController.getVoucherById
-    );
+    this.router.get("/:voucherId", this.VoucherController.getVoucherById);
     this.router.get(
       "/",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
       validateIsOrganizer(),
       validateOrganizer(),
       this.VoucherController.getAllVouchers
@@ -55,7 +53,7 @@ export class VoucherRouter {
     );
 
     this.router.delete(
-      "/:id",
+      "/:voucherId",
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
       validateIsOrganizer(),
       validateOrganizer(),

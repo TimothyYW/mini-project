@@ -17,7 +17,7 @@ enum Role {
   ORGANIZER
 }
 
-enum TransactionStatus {
+enum PaymentStatus {
   PENDING
   ACCEPTED
   REJECTED
@@ -43,7 +43,7 @@ model User {
 
   points        Point[]
   events        Event[]  @relation("OrganizerEvents")
-  transactions  Transaction[]
+  payments      Payment[]
   coupons       Coupon[]
 
   @@map("users")
@@ -78,7 +78,7 @@ model Voucher {
   createdAt     DateTime @default(now())
 
   event Event @relation(fields: [eventId], references: [id])
-
+  payments Payment[]
   @@map("vouchers")
 }
 
@@ -98,37 +98,45 @@ model Event {
   updatedAt      DateTime @updatedAt
 
   organizer   User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
-  transactions Transaction[]
+  payment Payment[]
   coupons      Voucher[]
 
   @@map("events")
 }
 
-model Transaction {
+model Payment {
   id            String            @id @default(uuid())
   userId        Int
   eventId       Int
   quantity      Int
   totalPrice    Int
-  status        TransactionStatus @default(PENDING)
-  paymentProof  String?
+  status        PaymentStatus @default(PENDING)
+  proof  String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
+  couponId    Int?
+  voucherId   Int?
+
   user  User  @relation(fields: [userId], references: [id])
   event Event @relation(fields: [eventId], references: [id])
+  coupon Coupon? @relation(fields: [couponId], references: [id])
+  voucher Voucher? @relation(fields: [voucherId], references: [id])
 
-  @@map("transactions")
+
+  @@map("payments")
 }
 
 model Coupon {
-  id             String   @id @default(uuid())
+  id             Int   @id @default(autoincrement())
   userId         Int
   code           String   @unique
   discountValue  Int
   isUsed         Boolean  @default(false)
   expiresAt      DateTime
   createdAt      DateTime @default(now())
+
+  payments Payment[]
 
   user User @relation(fields: [userId], references: [id])
 

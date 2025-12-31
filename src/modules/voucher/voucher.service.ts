@@ -54,4 +54,11 @@ export class VoucherService {
             where: { id: voucherId },
         });
     };
+
+    getVoucherCode = async (voucherCode: string) => {
+        const voucher = await this.prisma.voucher.findUnique({
+            where: { code: voucherCode },
+        });
+        return voucher;
+    };
 }

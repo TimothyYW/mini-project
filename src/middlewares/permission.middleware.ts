@@ -14,6 +14,17 @@ export const validateIsOrganizer = () => {
   };
 };
 
+export const validateIsCustomer = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = res.locals.user;
+
+    if (user.role !== "CUSTOMER") {
+      throw new ApiError("Access denied: Customer only", 403);
+    }
+    next();
+  };
+};
+
 export const validateOrganizer = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const user = res.locals.user;

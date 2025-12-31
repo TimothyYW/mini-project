@@ -6,6 +6,7 @@ import { errorMiddleware } from "./middlewares/error.middleware";
 import { AuthRouter } from "./modules/auth/auth.router";
 import { EventRouter } from "./modules/event/event.router";
 import { VoucherRouter } from "./modules/voucher/voucher.router";
+import { PaymentRouter } from "./modules/payment/payment.router";
 
 export class App {
   app: Express;
@@ -26,11 +27,13 @@ export class App {
     const authRouter = new AuthRouter();
     const eventRouter = new EventRouter();
     const voucherRouter = new VoucherRouter();
+    const paymentRouter = new PaymentRouter();
 
 
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/events", eventRouter.getRouter());
     this.app.use("/events/:id/voucher", voucherRouter.getRouter());
+    this.app.use("/events/:id/payments", paymentRouter.getRouter());
     }
 
   private handleError() {

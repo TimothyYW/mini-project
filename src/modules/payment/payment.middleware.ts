@@ -9,6 +9,7 @@ export const validateVoucher = () => {
         const voucherCode = req.body.voucherCode;
 
         if(!voucherCode || voucherCode === undefined){
+            next();
             return;
         }
 
@@ -24,8 +25,9 @@ export const validateVoucher = () => {
         if (event.id !== voucher.eventId) {
             throw new ApiError("Voucher does not belong to this event", 400);
         }
-
+        
         res.locals.voucher = voucher;
+        next();
     };
 };
 
@@ -33,6 +35,7 @@ export const validateCoupon = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
         const couponCode = req.body.couponCode;
         if(!couponCode || couponCode === undefined){
+            next();
             return;
         }
 
@@ -54,5 +57,6 @@ export const validateCoupon = () => {
             throw new ApiError("Coupon code has already been used", 400);
         }
         res.locals.coupon = coupon;
+        next();
     };
 };

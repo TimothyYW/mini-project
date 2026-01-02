@@ -13,7 +13,7 @@ export class PaymentController {
     const coupon = res.locals.coupon;
     const voucher = res.locals.voucher;
     const user = res.locals.user;
-    const result = await this.paymentService.createPayment(req.body, event.id, user.id, voucher, coupon);
+    const result = await this.paymentService.createPayment(req.body, event, user, voucher, coupon);
     return res.status(201).send(result);
   };
 //   // Get /payments/:id

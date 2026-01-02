@@ -8,7 +8,8 @@ import { validateEvent } from "../../middlewares/event.middleware";
 import { validateIsCustomer, validateIsOrganizer } from "../../middlewares/permission.middleware";
 //import { validateVoucher } from "./voucher.middleware";
 import { validateOrganizer } from "../../middlewares/permission.middleware";
-import { validateVoucher, validateCoupon } from "./payment.middleware";
+import { validateVoucher, validateCoupon, validatePaymentReadOnly, validatePaymentId,validateCustomerProofUpload } from "./payment.middleware";
+import { ApprovedPaymentDto } from "./dto/approved-payment.dto";
 
 
 export class PaymentRouter {
@@ -35,31 +36,38 @@ export class PaymentRouter {
       validateCoupon(),
       this.PaymentController.createPayment
     );
-    // this.router.get(
-    //   "/:paymentId",
-    //   this.jwtMiddleware.verifyToken(JWT_SECRET!),
-    //   this.PaymentController.getAllPayments
-    // );
+    this.router.get(
+      "/:paymentId",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      validatePaymentReadOnly(),
+      this.PaymentController.getPaymentById
+    );
 
-    // this.router.get(
-    //   "/",
-    //   this.jwtMiddleware.verifyToken(JWT_SECRET!),
-    //   this.PaymentController.getAllPayments
-    // );
+    this.router.get(
+      "/",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      validateOrganizer(),
+      this.PaymentController.getAllPayments
+    );
 
-    // this.router.patch(
-    //   "/:paymentId/approval",
-    //   validateBody(CreatePaymentDto),
-    //   this.jwtMiddleware.verifyToken(JWT_SECRET!),
-    //   this.PaymentController.setPaymentApproval
-    // );
+    this.router.patch(
+      "/:paymentId/approval",
+      validateBody(ApprovedPaymentDto),
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      validatePaymentId(),
+      validateOrganizer(),
+      this.PaymentController.setPaymentApproval
+    );
 
-    // this.router.post(
-    //   "/:paymentId/proof",
-    //   this.jwtMiddleware.verifyToken(JWT_SECRET!),
-    //   this.PaymentController.submitPaymentProof
-    // );
-  };
+    this.router.post(
+      "/:paymentId/proof",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      validatePaymentId(),
+      validateIsCustomer(),
+      validateCustomerProofUpload(),
+      this.PaymentController.submitPaymentProof
+    );
+};
 
   getRouter = () => {
     return this.router;

@@ -2,6 +2,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { ApprovedPaymentDto } from "./dto/approved-payment.dto";
 import { Event, User, Voucher, Coupon } from "@prisma/client";
+import { SubmitPaymentProofDto } from "./dto/submit-payment.dto";
 
 export class PaymentService {
   private prisma: PrismaService;
@@ -48,25 +49,42 @@ export class PaymentService {
     return result;
   };
 
-  getAllPayments = async (eventId: number, userId: number) => {};
+  getAllPayments = async (eventId: number) => {
+    return await this.prisma.payment.findMany({
+      where: { eventId: eventId },
+    });
+  };
 
   getPaymentById = async (
-    paymentId: number,
-    eventId: number,
-    userId: number
-  ) => {};
+    paymentId: string,
+    eventId: number
+  ) => {
+    return await this.prisma.payment.findUnique({
+      where: { eventId: eventId, id: paymentId},
+    });
+  };
 
   setPaymentApproval = async (
     data: ApprovedPaymentDto,
-    paymentId: number,
-    eventId: number,
-    userId: number
-  ) => {};
+    paymentId: string,
+    eventId: number
+  ) => {
+    return await this.prisma.payment.update({
+      data: {
+        status: data.isApproved? "ACCEPTED" : "REJECTED"
+      },
+      where: { id: paymentId, eventId: eventId },
+    });
+  };
 
   submitPaymentProof = async (
-    paymentId: number,
-    eventId: number,
-    proof: string,
-    userId: number
-  ) => {};
+    data: SubmitPaymentProofDto,
+    paymentId: string,
+    eventId: number
+  ) => {
+    await this.prisma.payment.update({
+      where: { id: paymentId, eventId: eventId },
+      data: {proof: data.proof },
+    });
+  };
 }
